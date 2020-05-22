@@ -1,1 +1,2 @@
-# Lykke.Job.NugetReferencesScanner
+# NuGetReferencesScanner
+An web application to search references from C# projects to NuGet packages 

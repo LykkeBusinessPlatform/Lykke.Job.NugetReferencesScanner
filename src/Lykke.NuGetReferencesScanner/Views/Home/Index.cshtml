@@ -1,0 +1,68 @@
+﻿@{
+    Layout = null;
+}
+@using Lykke.NuGetReferencesScanner.Models
+@model Lykke.NuGetReferencesScanner.Models.RefsScanStatisticsModel
+
+<h3>Statistics: @Model.Statistics</h3>
+<h3>Status: @Model.Status</h3>
+
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/v/dt/dt-1.10.16/datatables.min.js"></script>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/dt-1.10.16/datatables.min.css" />
+
+
+<style type="text/css" class="init">
+    tr.group,
+    tr.group:hover {
+        background-color: #ddd !important;
+    }
+</style>
+
+
+<table id="example" class="display"></table>
+<script>
+    $(document).ready(function () {
+        $("#example").DataTable({
+            "paging": false,
+            "ordering": false,
+            "searching": false,
+            "info": false,
+            "ajax": {
+                "url": "/Home/GetData"
+            },
+            "columnDefs": [
+                { "visible": false, "targets": 0 },
+                {
+                    "targets": 3,
+                    "render": function (data, type, full, meta) {
+                        return '<a href="' + full.RepoUrl + '">Link</a>';
+                    }
+                }
+            ],
+            "drawCallback": function (settings) {
+                var api = this.api();
+                var rows = api.rows({ page: 'current' }).nodes();
+                var last = null;
+
+                api.column(0, { page: 'current' }).data().each(function (group, i) {
+                    if (last !== group) {
+                        $(rows).eq(i).before(
+                            '<tr class="group"><td colspan="5">' + group + '</td></tr>'
+                        );
+
+                        last = group;
+                    }
+                });
+            },
+            "columns": [
+                { "data": "NugetPacketName", "title": "Package name", name: "packageName", "autoWidth": true },
+                { "data": "NugetVersion", "title": "Version", name: "version", "autoWidth": true },
+                { "data": "RepoName", "title": "Repository name", name: "repoName", "autoWidth": true },
+                { "data": "RepoUrl", "title": "Repository url", name: "repoUrl", "autoWidth": true }
+            ]
+
+        });
+    });
+</script>

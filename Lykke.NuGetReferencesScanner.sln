@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27004.2006
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.NuGetReferencesScanner", "src\Lykke.NuGetReferencesScanner\Lykke.NuGetReferencesScanner.csproj", "{E24CE9F9-8500-4387-9401-9740663B2318}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.NuGetReferencesScanner.Tests", "tests\Lykke.NuGetReferencesScanner.Test\Lykke.NuGetReferencesScanner.Tests.csproj", "{D843DFDF-7383-4CA2-9B6D-2FC41E1DDB1C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E24CE9F9-8500-4387-9401-9740663B2318}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E24CE9F9-8500-4387-9401-9740663B2318}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E24CE9F9-8500-4387-9401-9740663B2318}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E24CE9F9-8500-4387-9401-9740663B2318}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D843DFDF-7383-4CA2-9B6D-2FC41E1DDB1C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D843DFDF-7383-4CA2-9B6D-2FC41E1DDB1C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D843DFDF-7383-4CA2-9B6D-2FC41E1DDB1C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D843DFDF-7383-4CA2-9B6D-2FC41E1DDB1C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {2A7BB164-67BE-47DD-8452-19042D9C4AFA}
+	EndGlobalSection
+EndGlobal
