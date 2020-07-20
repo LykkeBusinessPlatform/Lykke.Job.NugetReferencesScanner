@@ -18,7 +18,7 @@ namespace Lykke.NuGetReferencesScanner.Domain
 
         private static readonly string IncludePattern;
         private static readonly string ExcludePattern;
-        private static readonly Regex Regex;
+        private static readonly Dictionary<ProjectFileParserMode, Regex> Regex = new Dictionary<ProjectFileParserMode, Regex>();
 
         static ProjectFileParser()
         {
@@ -28,12 +28,14 @@ namespace Lykke.NuGetReferencesScanner.Domain
             ExcludePattern = "<PackageReference\\s+Include\\s*=\\s*\\\"((?!("
                  + string.Join('|', _excludePrefixes)
                  + ")).)(.+)\\\"";
-            Regex = new Regex(IncludePattern); // new Regex(ExcludePattern);
+            
+            Regex.Add(ProjectFileParserMode.Include, new Regex(IncludePattern));
+            Regex.Add(ProjectFileParserMode.Exclude, new Regex(ExcludePattern));
         }
 
-        public static IReadOnlyCollection<PackageReference> Parse(string projectFileContent)
+        public static IReadOnlyCollection<PackageReference> Parse(string projectFileContent, ProjectFileParserMode mode = ProjectFileParserMode.Include)
         {
-            var matches = Regex.Matches(projectFileContent);
+            var matches = Regex[mode].Matches(projectFileContent);
             var result = matches
                 .Select(m => ParseReferenceString(m.Value))
                 .ToArray();
@@ -46,5 +48,11 @@ namespace Lykke.NuGetReferencesScanner.Domain
             var parts = referenceString.Split('"', StringSplitOptions.RemoveEmptyEntries);
             return PackageReference.Parse(parts[1], parts[3]);
         }
+    }
+
+    public enum ProjectFileParserMode
+    {
+        Include,
+        Exclude,
     }
 }
