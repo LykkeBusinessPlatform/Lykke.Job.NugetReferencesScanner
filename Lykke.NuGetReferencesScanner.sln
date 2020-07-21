@@ -7,9 +7,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.NuGetReferencesScanne
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.NuGetReferencesScanner.Tests", "tests\Lykke.NuGetReferencesScanner.Test\Lykke.NuGetReferencesScanner.Tests.csproj", "{D843DFDF-7383-4CA2-9B6D-2FC41E1DDB1C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lykke.NuGetReferencesScanner.App", "Lykke.NuGetReferencesScanner.App\Lykke.NuGetReferencesScanner.App.csproj", "{9F11EB12-FDB9-4D20-8B26-A843C53F2F35}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lykke.NuGetReferencesScanner.App", "src\Lykke.NuGetReferencesScanner.App\Lykke.NuGetReferencesScanner.App.csproj", "{9F11EB12-FDB9-4D20-8B26-A843C53F2F35}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lykke.NuGetReferencesScanner.Domain", "Lykke.NuGetReferencesScanner.Domain\Lykke.NuGetReferencesScanner.Domain.csproj", "{E536DE34-BC2B-4802-9ECF-9A6D86497015}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lykke.NuGetReferencesScanner.Domain", "src\Lykke.NuGetReferencesScanner.Domain\Lykke.NuGetReferencesScanner.Domain.csproj", "{E536DE34-BC2B-4802-9ECF-9A6D86497015}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
