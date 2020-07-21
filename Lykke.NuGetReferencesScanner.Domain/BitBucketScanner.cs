@@ -11,7 +11,7 @@ using SharpBucket.V2.Pocos;
 
 namespace Lykke.NuGetReferencesScanner.Domain
 {
-    internal class BitBucketScanner : IOrganizationScanner
+    public class BitBucketScanner : IOrganizationScanner
     {
         private const string KeyEnvVar = "BitBucketKey";
         private const string SecretEnvVar = "BitBucketSecret";
@@ -24,7 +24,7 @@ namespace Lykke.NuGetReferencesScanner.Domain
         {
         };
 
-        internal const string AccountEnvVar = "BitBucketAccount";
+        public const string AccountEnvVar = "BitBucketAccount";
 
         public BitBucketScanner(IConfiguration configuration)
         {

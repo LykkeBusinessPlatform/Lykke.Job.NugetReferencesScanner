@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Lykke.NuGetReferencesScanner.Domain
 {
-    internal interface IOrganizationScanner
+    public interface IOrganizationScanner
     {
         Task ScanReposAsync(
             ConcurrentDictionary<PackageReference, HashSet<RepoInfo>> graph,

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Lykke.NuGetReferencesScanner.Domain
 {
-    internal class GitScanner : IReferencesScanner, IScanProgress
+    public class GitScanner : IReferencesScanner, IScanProgress
     {
         private readonly TimeSpan _errorRetryDelay = TimeSpan.FromMinutes(20);
         private readonly IEnumerable<IOrganizationScanner> _organizationScanners;
@@ -21,7 +21,7 @@ namespace Lykke.NuGetReferencesScanner.Domain
         protected string _status;
         protected DateTime? _lastUpDateTime;
 
-        internal GitScanner(IEnumerable<IOrganizationScanner> organizationScanners)
+        public GitScanner(IEnumerable<IOrganizationScanner> organizationScanners)
         {
             _organizationScanners = organizationScanners;
             _timer = new Timer(_ => ScanAsync().GetAwaiter().GetResult());

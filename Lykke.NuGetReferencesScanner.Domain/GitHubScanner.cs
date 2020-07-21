@@ -8,7 +8,7 @@ using Octokit.Internal;
 
 namespace Lykke.NuGetReferencesScanner.Domain
 {
-    internal class GitHubScanner : IOrganizationScanner
+    public class GitHubScanner : IOrganizationScanner
     {
         private const string ApiKeyEnvVar = "GitHubApiKey";
 
@@ -16,7 +16,7 @@ namespace Lykke.NuGetReferencesScanner.Domain
         private readonly HashSet<string> _solutions = new HashSet<string>();
         private readonly string _organization;
 
-        internal const string OrganizationKeyEnvVar = "GitHubOrganization";
+        public const string OrganizationKeyEnvVar = "GitHubOrganization";
 
         public GitHubScanner(IConfiguration configuration)
         {

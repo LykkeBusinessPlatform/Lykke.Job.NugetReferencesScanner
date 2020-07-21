@@ -40,4 +40,8 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\Lykke.NuGetReferencesScanner.Domain\Lykke.NuGetReferencesScanner.Domain.csproj" />
+  </ItemGroup>
+
 </Project>
