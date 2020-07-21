@@ -10,4 +10,14 @@
       <PackageReference Include="Microsoft.Extensions.Hosting" Version="3.1.6" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Update="appsettings.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Lykke.NuGetReferencesScanner.Domain\Lykke.NuGetReferencesScanner.Domain.csproj" />
+    </ItemGroup>
+
 </Project>
