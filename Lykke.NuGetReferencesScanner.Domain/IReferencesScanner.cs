@@ -1,8 +1,10 @@
-﻿namespace Lykke.NuGetReferencesScanner.Domain
+﻿using System.Threading.Tasks;
+
+namespace Lykke.NuGetReferencesScanner.Domain
 {
     public interface IReferencesScanner
     {
-        ScanResult GetScanResult();
+        Task<ScanResult> GetScanResult();
         void Start();
     }
 }
