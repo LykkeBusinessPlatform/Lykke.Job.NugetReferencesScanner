@@ -4,7 +4,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Lykke.NuGetReferencesScanner.Domain.Options;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using SharpBucket;
 using SharpBucket.V2;
 using SharpBucket.V2.Pocos;
@@ -20,26 +22,33 @@ namespace Lykke.NuGetReferencesScanner.Domain
         private readonly string _bbAccount;
         private readonly Dictionary<string, RepoInfo> _reposCache = new Dictionary<string, RepoInfo>();
 
-        private readonly List<string> _skipRepos = new List<string>
-        {
-        };
+        private readonly List<string> _skipRepos = new List<string> { };
 
         public const string AccountEnvVar = "BitBucketAccount";
 
-        public BitBucketScanner(IConfiguration configuration)
+        public BitBucketScanner(IConfiguration configuration) : this(configuration[AccountEnvVar],
+            configuration[KeyEnvVar], configuration[SecretEnvVar])
         {
-            var bbKey = configuration[KeyEnvVar];
-            if (string.IsNullOrWhiteSpace(bbKey))
+        }
+
+        public BitBucketScanner(IOptions<BitBucketOptions> options) : this(options.Value.Account, options.Value.Key,
+            options.Value.Secret)
+        {
+        }
+
+        private BitBucketScanner(string account, string key, string secret)
+        {
+            if (string.IsNullOrWhiteSpace(key))
                 throw new InvalidOperationException($"{KeyEnvVar} env var can't be empty!");
-            var bbSecret = configuration[SecretEnvVar];
-            if (string.IsNullOrWhiteSpace(bbSecret))
+            if (string.IsNullOrWhiteSpace(secret))
                 throw new InvalidOperationException($"{SecretEnvVar} env var can't be empty!");
-            _bbAccount = configuration[AccountEnvVar];
-            if (string.IsNullOrWhiteSpace(_bbAccount))
+            if (string.IsNullOrWhiteSpace(account))
                 throw new InvalidOperationException($"{AccountEnvVar} env var can't be empty!");
 
+            _bbAccount = account;
+            
             _client = new SharpBucketV2();
-            _client.OAuth2ClientCredentials(bbKey, bbSecret);
+            _client.OAuth2ClientCredentials(key, secret);
         }
 
         public Task ScanReposAsync(

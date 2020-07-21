@@ -2,7 +2,10 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Lykke.NuGetReferencesScanner.Domain.Options;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Octokit;
 using Octokit.Internal;
 
@@ -18,19 +21,30 @@ namespace Lykke.NuGetReferencesScanner.Domain
 
         public const string OrganizationKeyEnvVar = "GitHubOrganization";
 
-        public GitHubScanner(IConfiguration configuration)
+        public GitHubScanner(IConfiguration configuration) : this(configuration[OrganizationKeyEnvVar],
+            configuration[ApiKeyEnvVar])
         {
-            var apiKey = configuration[ApiKeyEnvVar];
+        }
+
+        public GitHubScanner(IOptions<GithubOptions> options) : this(options.Value.Organization, options.Value.ApiKey)
+        {
+        }
+
+        private GitHubScanner(string organization, string apiKey)
+        {
             if (string.IsNullOrWhiteSpace(apiKey))
-                throw new InvalidOperationException($"{ApiKeyEnvVar} env var can't be empty. For unauthenticated requests rate limit = 60 calls per hour!");
-            _organization = configuration[OrganizationKeyEnvVar];
+                throw new InvalidOperationException(
+                    $"{ApiKeyEnvVar} env var can't be empty. For unauthenticated requests rate limit = 60 calls per hour!");
             if (string.IsNullOrWhiteSpace(_organization))
                 throw new InvalidOperationException($"{OrganizationKeyEnvVar} env var can't be empty.");
 
-            _client = new GitHubClient(new ProductHeaderValue("MyAmazingApp2"), new InMemoryCredentialStore(new Credentials(apiKey)));
+            _organization = organization;
+
+            _client = new GitHubClient(new ProductHeaderValue("MyAmazingApp2"),
+                new InMemoryCredentialStore(new Credentials(apiKey)));
         }
 
-        public  async Task ScanReposAsync(
+        public async Task ScanReposAsync(
             ConcurrentDictionary<PackageReference, HashSet<RepoInfo>> graph,
             IScanProgress scanProgress)
         {
@@ -38,8 +52,7 @@ namespace Lykke.NuGetReferencesScanner.Domain
 
             var scr = new SearchCodeRequest("PackageReference Lykke")
             {
-                Organization = _organization,
-                Extensions = new List<string> { "csproj" }
+                Organization = _organization, Extensions = new List<string> {"csproj"}
             };
             var searchResult = await _client.Search.SearchCode(scr);
             var totalProjectsCount = searchResult.TotalCount;
