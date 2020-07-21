@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Lykke.NuGetReferencesScanner.Domain.Options;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Octokit;
 using Octokit.Internal;
@@ -19,6 +18,7 @@ namespace Lykke.NuGetReferencesScanner.Domain
         private readonly HashSet<string> _solutions = new HashSet<string>();
         private readonly string _organization;
 
+        public const string ConfigurationSection = "Github";
         public const string OrganizationKeyEnvVar = "GitHubOrganization";
 
         public GitHubScanner(IConfiguration configuration) : this(configuration[OrganizationKeyEnvVar],

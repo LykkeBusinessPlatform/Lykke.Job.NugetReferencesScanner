@@ -24,6 +24,7 @@ namespace Lykke.NuGetReferencesScanner.Domain
 
         private readonly List<string> _skipRepos = new List<string> { };
 
+        public const string ConfigurationSection = "BitBucket";
         public const string AccountEnvVar = "BitBucketAccount";
 
         public BitBucketScanner(IConfiguration configuration) : this(configuration[AccountEnvVar],

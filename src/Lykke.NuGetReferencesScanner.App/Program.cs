@@ -17,28 +17,29 @@ namespace Lykke.NuGetReferencesScanner.App
                 {
                     var configuration = hostingContext.Configuration;
 
-                    services.Configure<GithubOptions>(configuration.GetSection("Github"));
-                    services.Configure<BitBucketOptions>(configuration.GetSection("BitBucket"));
+                    var githubSection = configuration.GetSection(GitHubScanner.ConfigurationSection);
+                    var bitBucketSection = configuration.GetSection(BitBucketScanner.ConfigurationSection);
 
-                    if (ScannerConfigured(GitHubScanner.OrganizationKeyEnvVar, configuration))
+                    if (githubSection.Exists())
+                    {
+                        services.Configure<GithubOptions>(githubSection);
                         services.AddSingleton<IOrganizationScanner, GitHubScanner>(provider =>
                             new GitHubScanner(provider.GetRequiredService<IOptions<GithubOptions>>()));
-                    if (ScannerConfigured(BitBucketScanner.AccountEnvVar, configuration))
+                    }
+
+                    if (bitBucketSection.Exists())
+                    {
+                        services.Configure<BitBucketOptions>(bitBucketSection);
                         services.AddSingleton<IOrganizationScanner, BitBucketScanner>(provider => 
                             new BitBucketScanner(provider.GetRequiredService<IOptions<BitBucketOptions>>()));
+                    }
 
-                    services.AddSingleton<IReferencesScanner, GitScanner>();
+                    services.AddSingleton<IReferencesScanner, ConsoleGitScanner>();
                     services.AddHostedService<App>();
                 })
                 .Build();
 
             await host.StartAsync();
-        }
-
-        private static bool ScannerConfigured(string scannerEnvVar, IConfiguration configuration)
-        {
-            var key = configuration[scannerEnvVar];
-            return !string.IsNullOrWhiteSpace(key);
         }
     }
 }

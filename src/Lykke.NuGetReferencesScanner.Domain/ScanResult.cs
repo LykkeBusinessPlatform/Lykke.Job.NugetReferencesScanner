@@ -16,5 +16,10 @@ namespace Lykke.NuGetReferencesScanner.Domain
             Statistics = statistics;
             Data = data;
         }
+
+        public ScanResult(IReadOnlyCollection<Tuple<PackageReference, RepoInfo>> data) : this(string.Empty,
+            string.Empty, data)
+        {
+        }
     }
 }
