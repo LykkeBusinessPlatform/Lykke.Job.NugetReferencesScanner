@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Lykke.NuGetReferencesScanner.Domain;
 
-namespace Lykke.NuGetReferencesScanner.App
+namespace Lykke.NuGetReferencesScanner.App.Domain
 {
     public class ConsoleGitScanner : IReferencesScanner
     {
@@ -20,10 +19,7 @@ namespace Lykke.NuGetReferencesScanner.App
         {
             var graph = await GetGraph();
 
-            var flatResult = graph
-                .SelectMany(g => g.Value.Select(v => new Tuple<PackageReference, RepoInfo>(g.Key, v))).ToArray();
-
-            return new ScanResult(flatResult);
+            return new ScanResult(graph);
         }
 
         private async Task<ConcurrentDictionary<PackageReference, HashSet<RepoInfo>>> GetGraph()

@@ -1,10 +1,10 @@
 ﻿using System.Threading.Tasks;
+using Lykke.NuGetReferencesScanner.App.Domain;
 using Lykke.NuGetReferencesScanner.Domain;
 using Lykke.NuGetReferencesScanner.Domain.Options;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Options;
 
 namespace Lykke.NuGetReferencesScanner.App
 {
@@ -23,17 +23,18 @@ namespace Lykke.NuGetReferencesScanner.App
                     if (githubSection.Exists())
                     {
                         services.Configure<GithubOptions>(githubSection);
-                        services.AddSingleton<IOrganizationScanner, GitHubScanner>(provider =>
-                            new GitHubScanner(provider.GetRequiredService<IOptions<GithubOptions>>()));
+                        services.AddSingleton<IOrganizationScanner, GitHubScanner>();
                     }
 
                     if (bitBucketSection.Exists())
                     {
                         services.Configure<BitBucketOptions>(bitBucketSection);
-                        services.AddSingleton<IOrganizationScanner, BitBucketScanner>(provider => 
-                            new BitBucketScanner(provider.GetRequiredService<IOptions<BitBucketOptions>>()));
+                        services.AddSingleton<IOrganizationScanner, BitBucketScanner>();
                     }
 
+                    services.AddSingleton<IParserModeProvider, ParserModeProvider>();
+                    services.AddSingleton<INugetVersionService, NugetVersionService>();
+                    services.AddSingleton<IReporter, CsvReporter>();
                     services.AddSingleton<IReferencesScanner, ConsoleGitScanner>();
                     services.AddHostedService<App>();
                 })

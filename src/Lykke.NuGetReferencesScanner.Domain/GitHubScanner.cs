@@ -3,7 +3,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Lykke.NuGetReferencesScanner.Domain.Options;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Octokit;
 using Octokit.Internal;
@@ -12,31 +11,26 @@ namespace Lykke.NuGetReferencesScanner.Domain
 {
     public class GitHubScanner : IOrganizationScanner
     {
-        private const string ApiKeyEnvVar = "GitHubApiKey";
-
+        private readonly IParserModeProvider _parserModeProvider;
         private readonly GitHubClient _client;
         private readonly HashSet<string> _solutions = new HashSet<string>();
         private readonly string _organization;
 
         public const string ConfigurationSection = "Github";
-        public const string OrganizationKeyEnvVar = "GitHubOrganization";
 
-        public GitHubScanner(IConfiguration configuration) : this(configuration[OrganizationKeyEnvVar],
-            configuration[ApiKeyEnvVar])
+        public GitHubScanner(IOptions<GithubOptions> options, IParserModeProvider parserModeProvider) : this(
+            options.Value.Organization, options.Value.ApiKey)
         {
-        }
-
-        public GitHubScanner(IOptions<GithubOptions> options) : this(options.Value.Organization, options.Value.ApiKey)
-        {
+            _parserModeProvider = parserModeProvider;
         }
 
         private GitHubScanner(string organization, string apiKey)
         {
             if (string.IsNullOrWhiteSpace(apiKey))
-                throw new InvalidOperationException(
-                    $"{ApiKeyEnvVar} env var can't be empty. For unauthenticated requests rate limit = 60 calls per hour!");
-            if (string.IsNullOrWhiteSpace(_organization))
-                throw new InvalidOperationException($"{OrganizationKeyEnvVar} env var can't be empty.");
+                throw new ConfigurationValueMissingException(ConfigurationSection, nameof(apiKey),
+                    "For unauthenticated requests rate limit = 60 calls per hour!");
+            if (string.IsNullOrWhiteSpace(organization))
+                throw new ConfigurationValueMissingException(ConfigurationSection, nameof(organization));
 
             _organization = organization;
 
@@ -87,7 +81,7 @@ namespace Lykke.NuGetReferencesScanner.Domain
         {
             var projectContent = await _client.Repository.Content.GetAllContents(repoInfo.Repository.Id, repoInfo.Path);
             var repo = RepoInfo.Parse(repoInfo.Repository.Name, repoInfo.HtmlUrl);
-            var nugetRefs = ProjectFileParser.Parse(projectContent[0].Content);
+            var nugetRefs = ProjectFileParser.Parse(projectContent[0].Content, _parserModeProvider.GetParserMode());
 
             Console.WriteLine($"Repo name {repoInfo.Repository.Name} file name {repoInfo.Name}");
 

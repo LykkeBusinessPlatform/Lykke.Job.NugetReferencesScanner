@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using JetBrains.Annotations;
 using Lykke.NuGetReferencesScanner.Domain;
+using Lykke.NuGetReferencesScanner.Domain.Options;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -27,26 +27,26 @@ namespace Lykke.NuGetReferencesScanner
         [UsedImplicitly]
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddSingleton(Configuration);
             services.AddMvc();
 
-            try
+            var githubSection = Configuration.GetSection(GitHubScanner.ConfigurationSection);
+            var bitBucketSection = Configuration.GetSection(BitBucketScanner.ConfigurationSection);
+
+            if (githubSection.Exists())
             {
-                var scanners = new List<IOrganizationScanner>();
-
-                var ghKey = Configuration[GitHubScanner.OrganizationKeyEnvVar];
-                if (!string.IsNullOrWhiteSpace(ghKey))
-                    scanners.Add(new GitHubScanner(Configuration));
-
-                var bbKey = Configuration[BitBucketScanner.AccountEnvVar];
-                if (!string.IsNullOrWhiteSpace(bbKey))
-                    scanners.Add(new BitBucketScanner(Configuration));
-
-                services.AddSingleton<IReferencesScanner>(new GitScanner(scanners));
+                services.Configure<GithubOptions>(githubSection);
+                services.AddSingleton<IOrganizationScanner, GitHubScanner>();
             }
-            catch (Exception ex)
+
+            if (bitBucketSection.Exists())
             {
-                Console.WriteLine(ex);
+                services.Configure<BitBucketOptions>(bitBucketSection);
+                services.AddSingleton<IOrganizationScanner, BitBucketScanner>();
             }
+
+            services.AddSingleton<IParserModeProvider, ParserModeProvider>();
+            services.AddSingleton<IReferencesScanner, GitScanner>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -80,4 +80,3 @@ namespace Lykke.NuGetReferencesScanner
         }
     }
 }
-
