@@ -4,7 +4,7 @@ namespace Lykke.NuGetReferencesScanner.Domain
 {
     public interface IReferencesScanner
     {
-        Task<ScanResult> GetScanResult();
+        Task<ScanResult> GetScanResultAsync();
         void Start();
     }
 }

@@ -27,7 +27,7 @@ namespace Lykke.NuGetReferencesScanner.Domain
             _timer = new Timer(_ => ScanAsync().GetAwaiter().GetResult());
         }
 
-        public Task<ScanResult> GetScanResult()
+        public Task<ScanResult> GetScanResultAsync()
         {
             var flatResult = _graph.SelectMany(g => g.Value.Select(v => new Tuple<PackageReference, RepoInfo>(g.Key, v))).ToArray();
             var statString = $"Last update time {_lastUpDateTime}. Found {_foundReposCount} repositories, scanned {_scannedProjectFilesCount} projects.";

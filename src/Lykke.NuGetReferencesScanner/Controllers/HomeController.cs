@@ -18,14 +18,14 @@ namespace Lykke.NuGetReferencesScanner.Controllers
 
         public async Task<IActionResult> Index()
         {
-            var result = await _scanner.GetScanResult();
+            var result = await _scanner.GetScanResultAsync();
             var model = new RefsScanStatisticsModel { Statistics = result.Statistics, Status = result.Status };
             return View(model);
         }
 
         public async Task<IActionResult> GetData()
         {
-            var scanResult = await _scanner.GetScanResult();
+            var scanResult = await _scanner.GetScanResultAsync();
             var data = scanResult.Data
                 .OrderBy(d => d.Item1.Name)
                 .ThenBy(d => d.Item1.Version)

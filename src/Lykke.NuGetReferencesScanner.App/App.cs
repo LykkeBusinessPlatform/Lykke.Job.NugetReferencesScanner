@@ -24,7 +24,7 @@ namespace Lykke.NuGetReferencesScanner.App
         public async Task StartAsync(CancellationToken cancellationToken)
         {
             Console.WriteLine("Start nuget scanner");
-            var scanResult = await _scanner.GetScanResult();
+            var scanResult = await _scanner.GetScanResultAsync();
 
             var packages = scanResult.Graph.Keys.Select(reference => reference.Name).Distinct();
             

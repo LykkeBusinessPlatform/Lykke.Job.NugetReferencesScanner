@@ -15,7 +15,7 @@ namespace Lykke.NuGetReferencesScanner.App.Domain
             _organizationScanners = organizationScanners;
         }
 
-        public async Task<ScanResult> GetScanResult()
+        public async Task<ScanResult> GetScanResultAsync()
         {
             var graph = await GetGraph();
 
