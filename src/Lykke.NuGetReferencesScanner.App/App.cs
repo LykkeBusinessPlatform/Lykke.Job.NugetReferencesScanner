@@ -27,8 +27,11 @@ namespace Lykke.NuGetReferencesScanner.App
             var scanResult = await _scanner.GetScanResult();
 
             var packages = scanResult.Graph.Keys.Select(reference => reference.Name).Distinct();
+            
+            Console.WriteLine("Start getting current versions");
             var currentVersions = await _nugetVersionService.GetCurrentVersions(packages, cancellationToken);
             
+            Console.WriteLine("Start csv export");
             _reporter.Report(scanResult.Data, currentVersions);
 
             Console.WriteLine("Stop nuget scanner");
