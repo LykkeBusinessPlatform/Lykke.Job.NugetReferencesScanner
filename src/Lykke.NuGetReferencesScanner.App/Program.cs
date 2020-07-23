@@ -33,6 +33,7 @@ namespace Lykke.NuGetReferencesScanner.App
                     }
 
                     services.AddSingleton<IParserModeProvider, ParserModeProvider>();
+                    services.AddSingleton<IPackageWhitelist, PackageWhitelist>();
                     services.AddSingleton<INugetVersionService, NugetVersionService>();
                     services.AddSingleton<IReporter, CsvReporter>();
                     services.AddSingleton<IReferencesScanner, ConsoleGitScanner>();

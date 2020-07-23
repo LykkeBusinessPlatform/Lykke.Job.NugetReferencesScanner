@@ -12,16 +12,18 @@ namespace Lykke.NuGetReferencesScanner.Domain
     public class GitHubScanner : IOrganizationScanner
     {
         private readonly IParserModeProvider _parserModeProvider;
+        private readonly IPackageWhitelist _packageWhitelist;
         private readonly GitHubClient _client;
         private readonly HashSet<string> _solutions = new HashSet<string>();
         private readonly string _organization;
 
         public const string ConfigurationSection = "Github";
 
-        public GitHubScanner(IOptions<GithubOptions> options, IParserModeProvider parserModeProvider) : this(
-            options.Value.Organization, options.Value.ApiKey)
+        public GitHubScanner(IOptions<GithubOptions> options, IParserModeProvider parserModeProvider, IPackageWhitelist packageWhitelist) : this(
+            options.Value.Organization, options.Value.Key)
         {
             _parserModeProvider = parserModeProvider;
+            _packageWhitelist = packageWhitelist;
         }
 
         private GitHubScanner(string organization, string apiKey)
@@ -62,6 +64,12 @@ namespace Lykke.NuGetReferencesScanner.Domain
 
                 foreach (var item in searchResult.Items)
                 {
+                    if (_packageWhitelist.ShouldSkip(item.Repository.Name))
+                    {
+                        Console.WriteLine($"Skipped {item.Repository.Name}");
+                        continue;
+                    }
+                    
                     bool wasAdded = _solutions.Add(item.Repository.Name);
                     if (wasAdded)
                         scanProgress.UpdateRepoProgress();

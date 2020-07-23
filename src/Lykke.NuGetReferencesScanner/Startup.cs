@@ -46,6 +46,7 @@ namespace Lykke.NuGetReferencesScanner
             }
 
             services.AddSingleton<IParserModeProvider, ParserModeProvider>();
+            services.AddSingleton<IPackageWhitelist, PackageWhitelist>();
             services.AddSingleton<IReferencesScanner, GitScanner>();
         }
 

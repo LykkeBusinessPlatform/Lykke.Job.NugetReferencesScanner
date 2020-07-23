@@ -15,18 +15,21 @@ namespace Lykke.NuGetReferencesScanner.Domain
     public class BitBucketScanner : IOrganizationScanner
     {
         private readonly IParserModeProvider _parserModeProvider;
+        private readonly IPackageWhitelist _packageWhitelist;
         private readonly SharpBucketV2 _client;
 
         private readonly string _bbAccount;
         private readonly Dictionary<string, RepoInfo> _reposCache = new Dictionary<string, RepoInfo>();
-        private readonly List<string> _skipRepos = new List<string> { };
 
         public const string ConfigurationSection = "BitBucket";
-        public BitBucketScanner(IOptions<BitBucketOptions> options, IParserModeProvider parserModeProvider) : this(
+
+        public BitBucketScanner(IOptions<BitBucketOptions> options, IParserModeProvider parserModeProvider,
+            IPackageWhitelist packageWhitelist) : this(
             options.Value.Account, options.Value.Key,
             options.Value.Secret)
         {
             _parserModeProvider = parserModeProvider;
+            _packageWhitelist = packageWhitelist;
         }
 
         private BitBucketScanner(string account, string key, string secret)
@@ -39,7 +42,7 @@ namespace Lykke.NuGetReferencesScanner.Domain
                 throw new ConfigurationValueMissingException(ConfigurationSection, nameof(account));
 
             _bbAccount = account;
-            
+
             _client = new SharpBucketV2();
             _client.OAuth2ClientCredentials(key, secret);
         }
@@ -92,7 +95,7 @@ namespace Lykke.NuGetReferencesScanner.Domain
                 return;
 
             var repoSlug = ExtractSlugFromUrl(searchFile.links.self.href);
-            if (_skipRepos.Contains(repoSlug))
+            if (_packageWhitelist.ShouldSkip(repoSlug))
             {
                 Console.WriteLine($"Skipped {repoSlug}");
                 return;
