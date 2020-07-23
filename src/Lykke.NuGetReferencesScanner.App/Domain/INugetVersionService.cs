@@ -8,7 +8,7 @@ namespace Lykke.NuGetReferencesScanner.App.Domain
 {
     public interface INugetVersionService
     {
-        Task<IDictionary<string, SemanticVersion>> GetCurrentVersions(IEnumerable<string> packages,
+        Task<IDictionary<string, SemanticVersion>> GetCurrentVersionsAsync(IEnumerable<string> packages,
             CancellationToken cancellationToken);
     }
 }

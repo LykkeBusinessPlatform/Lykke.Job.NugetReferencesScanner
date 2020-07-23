@@ -12,7 +12,7 @@ namespace Lykke.NuGetReferencesScanner.App.Domain
 {
     public class NugetVersionService : INugetVersionService
     {
-        public async Task<IDictionary<string, SemanticVersion>> GetCurrentVersions(IEnumerable<string> packages,
+        public async Task<IDictionary<string, SemanticVersion>> GetCurrentVersionsAsync(IEnumerable<string> packages,
             CancellationToken cancellationToken)
         {
             var logger = NullLogger.Instance;
