@@ -20,7 +20,15 @@ This console app scans BitBucket / Github repositories and compares all found pa
 }
 ```
 
-BitBucket account must be a team account.
+## Bitbucket
+
+`account` - name of Bitbucket account that needs to be scanned. It must be a team account.
+
+`key` - OAuth2 key
+
+`secret` - OAuth2 secret
+
+OAuth2 pair can be created at https://bitbucket.org/{{account}}/workspace/settings/api (_Workspace settings_ / _OAuth consumers_ / _Add consumer_). This must be a private consumer key to enable the `client_credentials` grant type.
 
 ## Github
 
