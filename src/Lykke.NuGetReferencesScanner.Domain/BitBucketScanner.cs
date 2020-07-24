@@ -4,42 +4,47 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
+using Lykke.NuGetReferencesScanner.Domain.Options;
+using Microsoft.Extensions.Options;
 using SharpBucket;
 using SharpBucket.V2;
 using SharpBucket.V2.Pocos;
 
 namespace Lykke.NuGetReferencesScanner.Domain
 {
-    internal class BitBucketScanner : IOrganizationScanner
+    public class BitBucketScanner : IOrganizationScanner
     {
-        private const string KeyEnvVar = "BitBucketKey";
-        private const string SecretEnvVar = "BitBucketSecret";
-
+        private readonly IParserModeProvider _parserModeProvider;
+        private readonly IPackageWhitelist _packageWhitelist;
         private readonly SharpBucketV2 _client;
+
         private readonly string _bbAccount;
         private readonly Dictionary<string, RepoInfo> _reposCache = new Dictionary<string, RepoInfo>();
 
-        private readonly List<string> _skipRepos = new List<string>
-        {
-        };
+        public const string ConfigurationSection = "BitBucket";
 
-        internal const string AccountEnvVar = "BitBucketAccount";
-
-        public BitBucketScanner(IConfiguration configuration)
+        public BitBucketScanner(IOptions<BitBucketOptions> options, IParserModeProvider parserModeProvider,
+            IPackageWhitelist packageWhitelist) : this(
+            options.Value.Account, options.Value.Key,
+            options.Value.Secret)
         {
-            var bbKey = configuration[KeyEnvVar];
-            if (string.IsNullOrWhiteSpace(bbKey))
-                throw new InvalidOperationException($"{KeyEnvVar} env var can't be empty!");
-            var bbSecret = configuration[SecretEnvVar];
-            if (string.IsNullOrWhiteSpace(bbSecret))
-                throw new InvalidOperationException($"{SecretEnvVar} env var can't be empty!");
-            _bbAccount = configuration[AccountEnvVar];
-            if (string.IsNullOrWhiteSpace(_bbAccount))
-                throw new InvalidOperationException($"{AccountEnvVar} env var can't be empty!");
+            _parserModeProvider = parserModeProvider;
+            _packageWhitelist = packageWhitelist;
+        }
+
+        private BitBucketScanner(string account, string key, string secret)
+        {
+            if (string.IsNullOrWhiteSpace(key))
+                throw new ConfigurationValueMissingException(ConfigurationSection, nameof(key));
+            if (string.IsNullOrWhiteSpace(secret))
+                throw new ConfigurationValueMissingException(ConfigurationSection, nameof(secret));
+            if (string.IsNullOrWhiteSpace(account))
+                throw new ConfigurationValueMissingException(ConfigurationSection, nameof(account));
+
+            _bbAccount = account;
 
             _client = new SharpBucketV2();
-            _client.OAuth2ClientCredentials(bbKey, bbSecret);
+            _client.OAuth2ClientCredentials(key, secret);
         }
 
         public Task ScanReposAsync(
@@ -90,7 +95,7 @@ namespace Lykke.NuGetReferencesScanner.Domain
                 return;
 
             var repoSlug = ExtractSlugFromUrl(searchFile.links.self.href);
-            if (_skipRepos.Contains(repoSlug))
+            if (_packageWhitelist.ShouldSkip(repoSlug))
             {
                 Console.WriteLine($"Skipped {repoSlug}");
                 return;
@@ -107,7 +112,7 @@ namespace Lykke.NuGetReferencesScanner.Domain
             }
 
             var projectContent = repoResource.SrcResource().GetFileContent(searchFile.path);
-            var nugetRefs = ProjectFileParser.Parse(projectContent);
+            var nugetRefs = ProjectFileParser.Parse(projectContent, _parserModeProvider.GetParserMode());
 
             foreach (var nugetRef in nugetRefs)
             {

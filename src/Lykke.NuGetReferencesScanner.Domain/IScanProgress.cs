@@ -1,6 +1,6 @@
 ﻿namespace Lykke.NuGetReferencesScanner.Domain
 {
-    internal interface IScanProgress
+    public interface IScanProgress
     {
         void SetRepoProgress(int processedReposCount);
 

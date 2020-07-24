@@ -2,35 +2,45 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
+using Lykke.NuGetReferencesScanner.Domain.Options;
+using Microsoft.Extensions.Options;
 using Octokit;
 using Octokit.Internal;
 
 namespace Lykke.NuGetReferencesScanner.Domain
 {
-    internal class GitHubScanner : IOrganizationScanner
+    public class GitHubScanner : IOrganizationScanner
     {
-        private const string ApiKeyEnvVar = "GitHubApiKey";
-
+        private readonly IParserModeProvider _parserModeProvider;
+        private readonly IPackageWhitelist _packageWhitelist;
         private readonly GitHubClient _client;
         private readonly HashSet<string> _solutions = new HashSet<string>();
         private readonly string _organization;
 
-        internal const string OrganizationKeyEnvVar = "GitHubOrganization";
+        public const string ConfigurationSection = "Github";
 
-        public GitHubScanner(IConfiguration configuration)
+        public GitHubScanner(IOptions<GithubOptions> options, IParserModeProvider parserModeProvider, IPackageWhitelist packageWhitelist) : this(
+            options.Value.Organization, options.Value.Key)
         {
-            var apiKey = configuration[ApiKeyEnvVar];
-            if (string.IsNullOrWhiteSpace(apiKey))
-                throw new InvalidOperationException($"{ApiKeyEnvVar} env var can't be empty. For unauthenticated requests rate limit = 60 calls per hour!");
-            _organization = configuration[OrganizationKeyEnvVar];
-            if (string.IsNullOrWhiteSpace(_organization))
-                throw new InvalidOperationException($"{OrganizationKeyEnvVar} env var can't be empty.");
-
-            _client = new GitHubClient(new ProductHeaderValue("MyAmazingApp2"), new InMemoryCredentialStore(new Credentials(apiKey)));
+            _parserModeProvider = parserModeProvider;
+            _packageWhitelist = packageWhitelist;
         }
 
-        public  async Task ScanReposAsync(
+        private GitHubScanner(string organization, string apiKey)
+        {
+            if (string.IsNullOrWhiteSpace(apiKey))
+                throw new ConfigurationValueMissingException(ConfigurationSection, nameof(apiKey),
+                    "For unauthenticated requests rate limit = 60 calls per hour!");
+            if (string.IsNullOrWhiteSpace(organization))
+                throw new ConfigurationValueMissingException(ConfigurationSection, nameof(organization));
+
+            _organization = organization;
+
+            _client = new GitHubClient(new ProductHeaderValue("MyAmazingApp2"),
+                new InMemoryCredentialStore(new Credentials(apiKey)));
+        }
+
+        public async Task ScanReposAsync(
             ConcurrentDictionary<PackageReference, HashSet<RepoInfo>> graph,
             IScanProgress scanProgress)
         {
@@ -38,8 +48,7 @@ namespace Lykke.NuGetReferencesScanner.Domain
 
             var scr = new SearchCodeRequest("PackageReference Lykke")
             {
-                Organization = _organization,
-                Extensions = new List<string> { "csproj" }
+                Organization = _organization, Extensions = new List<string> {"csproj"}
             };
             var searchResult = await _client.Search.SearchCode(scr);
             var totalProjectsCount = searchResult.TotalCount;
@@ -55,6 +64,12 @@ namespace Lykke.NuGetReferencesScanner.Domain
 
                 foreach (var item in searchResult.Items)
                 {
+                    if (_packageWhitelist.ShouldSkip(item.Repository.Name))
+                    {
+                        Console.WriteLine($"Skipped {item.Repository.Name}");
+                        continue;
+                    }
+                    
                     bool wasAdded = _solutions.Add(item.Repository.Name);
                     if (wasAdded)
                         scanProgress.UpdateRepoProgress();
@@ -74,7 +89,7 @@ namespace Lykke.NuGetReferencesScanner.Domain
         {
             var projectContent = await _client.Repository.Content.GetAllContents(repoInfo.Repository.Id, repoInfo.Path);
             var repo = RepoInfo.Parse(repoInfo.Repository.Name, repoInfo.HtmlUrl);
-            var nugetRefs = ProjectFileParser.Parse(projectContent[0].Content);
+            var nugetRefs = ProjectFileParser.Parse(projectContent[0].Content, _parserModeProvider.GetParserMode());
 
             Console.WriteLine($"Repo name {repoInfo.Repository.Name} file name {repoInfo.Name}");
 
