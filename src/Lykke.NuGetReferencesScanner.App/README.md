@@ -6,6 +6,10 @@ This console app scans BitBucket / Github repositories and compares all found pa
 
 ```
 {
+    "Github": {
+        "organization": "",
+        "key": ""
+  },
     "BitBucket": {
         "account": "",
         "key": "",
@@ -17,6 +21,12 @@ This console app scans BitBucket / Github repositories and compares all found pa
 ```
 
 BitBucket account must be a team account.
+
+## Github
+
+`organization` - name of github account that needs to be scanned
+
+`key` - personal access token, can be created [here](https://github.com/settings/tokens)
 
 ## Mode
 
