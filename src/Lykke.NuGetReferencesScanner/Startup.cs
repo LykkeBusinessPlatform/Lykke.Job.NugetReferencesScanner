@@ -1,45 +1,63 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using JetBrains.Annotations;
-using Lykke.NuGetReferencesScanner.Domain;
+using Lykke.NuGetReferencesScanner.Domain.Abstractions;
+using Lykke.NuGetReferencesScanner.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace Lykke.NuGetReferencesScanner
 {
     public class Startup
     {
-        public Startup(IHostingEnvironment env)
-        {
-            var builder = new ConfigurationBuilder()
-                .SetBasePath(env.ContentRootPath)
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
-                .AddEnvironmentVariables();
-            Configuration = builder.Build();
-        }
+        private const string ReferencePrefixesEnvVarKey = "ReferencePrefixes";
+        private const string AreReferencePrefixesIncludeEnvVarKey = "AreReferencePrfixesIncluded";
+        private const string GitHubApiEnvVarKey = "GitHubApiKey";
+        private const string GitHubOrganizationEnvVarKey = "GitHubOrganization";
+        private const string BitBucketEnvVarKey = "BitBucketKey";
+        private const string BitBucketSecretEnvVarKey = "BitBucketSecret";
+        private const string BitBucketAccountEnvVarKey = "BitBucketAccount";
 
         public IConfiguration Configuration { get; }
+
+        public Startup(IConfiguration configuration)
+        {
+            Configuration = configuration;
+        }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         [UsedImplicitly]
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc();
+            services.AddControllersWithViews();
 
             try
             {
+                var projFileParser = new ProjectFileParser(
+                    Configuration[ReferencePrefixesEnvVarKey].Split(',').Select(s => s.Trim()),
+                    bool.Parse(Configuration[AreReferencePrefixesIncludeEnvVarKey]));
                 var scanners = new List<IOrganizationScanner>();
 
-                var ghKey = Configuration[GitHubScanner.OrganizationKeyEnvVar];
+                var ghKey = Configuration[GitHubOrganizationEnvVarKey];
                 if (!string.IsNullOrWhiteSpace(ghKey))
-                    scanners.Add(new GitHubScanner(Configuration));
+                    scanners.Add(
+                        new GitHubScanner(
+                            projFileParser,
+                            Configuration[GitHubOrganizationEnvVarKey],
+                            Configuration[GitHubApiEnvVarKey]));
 
-                var bbKey = Configuration[BitBucketScanner.AccountEnvVar];
+                var bbKey = Configuration[BitBucketAccountEnvVarKey];
                 if (!string.IsNullOrWhiteSpace(bbKey))
-                    scanners.Add(new BitBucketScanner(Configuration));
+                    scanners.Add(
+                        new BitBucketScanner(
+                            projFileParser,
+                            Configuration[BitBucketAccountEnvVarKey],
+                            Configuration[BitBucketEnvVarKey],
+                            Configuration[BitBucketSecretEnvVarKey]));
 
                 services.AddSingleton<IReferencesScanner>(new GitScanner(scanners));
             }
@@ -51,18 +69,25 @@ namespace Lykke.NuGetReferencesScanner
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         [UsedImplicitly]
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, IApplicationLifetime appLifetime)
+        public void Configure(
+            IApplicationBuilder app,
+            IWebHostEnvironment env,
+            IHostApplicationLifetime appLifetime)
         {
             app.UseDeveloperExceptionPage();
-            app.UseBrowserLink();
+            //app.UseBrowserLink();
 
             app.UseStaticFiles();
 
-            app.UseMvc(routes =>
+            app.UseRouting();
+
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapRoute(
+                endpoints.MapControllers();
+
+                endpoints.MapControllerRoute(
                     name: "default",
-                    template: "{controller=Home}/{action=Index}/{id?}");
+                    pattern: "{controller=Home}/{action=Index}/{id?}");
             });
 
             appLifetime.ApplicationStarted.Register(() =>

@@ -1,4 +1,6 @@
-﻿namespace Lykke.NuGetReferencesScanner.Domain
+﻿using Lykke.NuGetReferencesScanner.Domain.Models;
+
+namespace Lykke.NuGetReferencesScanner.Domain.Abstractions
 {
     public interface IReferencesScanner
     {

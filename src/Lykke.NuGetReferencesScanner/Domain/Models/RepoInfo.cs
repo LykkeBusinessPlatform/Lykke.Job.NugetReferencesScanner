@@ -1,6 +1,6 @@
-using System;
+﻿using System;
 
-namespace Lykke.NuGetReferencesScanner.Domain
+namespace Lykke.NuGetReferencesScanner.Domain.Models
 {
     public sealed class RepoInfo
     {
@@ -34,7 +34,7 @@ namespace Lykke.NuGetReferencesScanner.Domain
         {
             unchecked
             {
-                return ((Name != null ? Name.GetHashCode() : 0) * 397) ^ (Url != null ? Url.GetHashCode() : 0);
+                return (Name != null ? Name.GetHashCode() : 0) * 397 ^ (Url != null ? Url.GetHashCode() : 0);
             }
         }
     }

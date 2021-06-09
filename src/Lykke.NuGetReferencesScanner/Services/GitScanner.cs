@@ -4,8 +4,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Lykke.NuGetReferencesScanner.Domain.Abstractions;
+using Lykke.NuGetReferencesScanner.Domain.Models;
 
-namespace Lykke.NuGetReferencesScanner.Domain
+namespace Lykke.NuGetReferencesScanner.Services
 {
     internal class GitScanner : IReferencesScanner, IScanProgress
     {

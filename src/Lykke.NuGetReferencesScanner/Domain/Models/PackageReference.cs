@@ -1,7 +1,7 @@
 ﻿using System;
 using NuGet.Versioning;
 
-namespace Lykke.NuGetReferencesScanner.Domain
+namespace Lykke.NuGetReferencesScanner.Domain.Models
 {
     public sealed class PackageReference
     {
@@ -40,7 +40,7 @@ namespace Lykke.NuGetReferencesScanner.Domain
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != this.GetType()) return false;
+            if (obj.GetType() != GetType()) return false;
             return Equals((PackageReference)obj);
         }
 
@@ -48,7 +48,7 @@ namespace Lykke.NuGetReferencesScanner.Domain
         {
             unchecked
             {
-                return ((Name != null ? Name.GetHashCode() : 0) * 397) ^ (Version != null ? Version.GetHashCode() : 0);
+                return (Name != null ? Name.GetHashCode() : 0) * 397 ^ (Version != null ? Version.GetHashCode() : 0);
             }
         }
 
