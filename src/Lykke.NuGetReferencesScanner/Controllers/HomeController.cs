@@ -1,6 +1,4 @@
 ﻿using System.Linq;
-using System.Threading.Tasks;
-using Lykke.NuGetReferencesScanner.Domain;
 using Lykke.NuGetReferencesScanner.Domain.Abstractions;
 using Lykke.NuGetReferencesScanner.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -17,16 +15,16 @@ namespace Lykke.NuGetReferencesScanner.Controllers
             _scanner = scanner;
         }
 
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
         {
-            var result = await _scanner.GetScanResultAsync();
+            var result = _scanner.GetScanResult();
             var model = new RefsScanStatisticsModel { Statistics = result.Statistics, Status = result.Status };
             return View(model);
         }
 
-        public async Task<IActionResult> GetData()
+        public IActionResult GetData()
         {
-            var scanResult = await _scanner.GetScanResultAsync();
+            var scanResult = _scanner.GetScanResult();
             var data = scanResult.Data
                 .OrderBy(d => d.Item1.Name)
                 .ThenBy(d => d.Item1.Version)
