@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
+using Lykke.NuGetReferencesScanner.Domain;
 using Lykke.NuGetReferencesScanner.Domain.Abstractions;
+using Lykke.NuGetReferencesScanner.Domain.Options;
 using Lykke.NuGetReferencesScanner.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -33,38 +35,27 @@ namespace Lykke.NuGetReferencesScanner
         [UsedImplicitly]
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllersWithViews();
+            services.AddSingleton(Configuration);
+            services.AddMvc();
 
-            try
+            var githubSection = Configuration.GetSection(GitHubScanner.ConfigurationSection);
+            var bitBucketSection = Configuration.GetSection(BitBucketScanner.ConfigurationSection);
+
+            if (githubSection.Exists())
             {
-                var projFileParser = new ProjectFileParser(
-                    Configuration[ReferencePrefixesEnvVarKey].Split(',').Select(s => s.Trim()),
-                    bool.Parse(Configuration[AreReferencePrefixesIncludeEnvVarKey]));
-                var scanners = new List<IOrganizationScanner>();
-
-                var ghKey = Configuration[GitHubOrganizationEnvVarKey];
-                if (!string.IsNullOrWhiteSpace(ghKey))
-                    scanners.Add(
-                        new GitHubScanner(
-                            projFileParser,
-                            Configuration[GitHubOrganizationEnvVarKey],
-                            Configuration[GitHubApiEnvVarKey]));
-
-                var bbKey = Configuration[BitBucketAccountEnvVarKey];
-                if (!string.IsNullOrWhiteSpace(bbKey))
-                    scanners.Add(
-                        new BitBucketScanner(
-                            projFileParser,
-                            Configuration[BitBucketAccountEnvVarKey],
-                            Configuration[BitBucketEnvVarKey],
-                            Configuration[BitBucketSecretEnvVarKey]));
-
-                services.AddSingleton<IReferencesScanner>(new GitScanner(scanners));
+                services.Configure<GithubOptions>(githubSection);
+                services.AddSingleton<IOrganizationScanner, GitHubScanner>();
             }
-            catch (Exception ex)
+
+            if (bitBucketSection.Exists())
             {
-                Console.WriteLine(ex);
+                services.Configure<BitBucketOptions>(bitBucketSection);
+                services.AddSingleton<IOrganizationScanner, BitBucketScanner>();
             }
+
+            services.AddSingleton<IParserModeProvider, ParserModeProvider>();
+            services.AddSingleton<IPackageWhitelist, PackageWhitelist>();
+            services.AddSingleton<IReferencesScanner, GitScanner>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -105,4 +96,3 @@ namespace Lykke.NuGetReferencesScanner
         }
     }
 }
-
