@@ -1,27 +1,35 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using JetBrains.Annotations;
 using Lykke.NuGetReferencesScanner.Domain;
+using Lykke.NuGetReferencesScanner.Domain.Abstractions;
 using Lykke.NuGetReferencesScanner.Domain.Options;
+using Lykke.NuGetReferencesScanner.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace Lykke.NuGetReferencesScanner
 {
     public class Startup
     {
-        public Startup(IHostingEnvironment env)
-        {
-            var builder = new ConfigurationBuilder()
-                .SetBasePath(env.ContentRootPath)
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
-                .AddEnvironmentVariables();
-            Configuration = builder.Build();
-        }
+        private const string ReferencePrefixesEnvVarKey = "ReferencePrefixes";
+        private const string AreReferencePrefixesIncludeEnvVarKey = "AreReferencePrfixesIncluded";
+        private const string GitHubApiEnvVarKey = "GitHubApiKey";
+        private const string GitHubOrganizationEnvVarKey = "GitHubOrganization";
+        private const string BitBucketEnvVarKey = "BitBucketKey";
+        private const string BitBucketSecretEnvVarKey = "BitBucketSecret";
+        private const string BitBucketAccountEnvVarKey = "BitBucketAccount";
 
         public IConfiguration Configuration { get; }
+
+        public Startup(IConfiguration configuration)
+        {
+            Configuration = configuration;
+        }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         [UsedImplicitly]
@@ -52,18 +60,25 @@ namespace Lykke.NuGetReferencesScanner
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         [UsedImplicitly]
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, IApplicationLifetime appLifetime)
+        public void Configure(
+            IApplicationBuilder app,
+            IWebHostEnvironment env,
+            IHostApplicationLifetime appLifetime)
         {
             app.UseDeveloperExceptionPage();
-            app.UseBrowserLink();
+            //app.UseBrowserLink();
 
             app.UseStaticFiles();
 
-            app.UseMvc(routes =>
+            app.UseRouting();
+
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapRoute(
+                endpoints.MapControllers();
+
+                endpoints.MapControllerRoute(
                     name: "default",
-                    template: "{controller=Home}/{action=Index}/{id?}");
+                    pattern: "{controller=Home}/{action=Index}/{id?}");
             });
 
             appLifetime.ApplicationStarted.Register(() =>

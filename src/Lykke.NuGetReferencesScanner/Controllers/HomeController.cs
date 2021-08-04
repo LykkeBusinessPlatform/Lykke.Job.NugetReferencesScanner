@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
 using Lykke.NuGetReferencesScanner.Domain;
+using Lykke.NuGetReferencesScanner.Domain.Abstractions;
 using Lykke.NuGetReferencesScanner.Models;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
