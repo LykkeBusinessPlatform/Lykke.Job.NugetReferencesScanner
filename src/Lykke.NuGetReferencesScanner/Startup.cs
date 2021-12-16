@@ -16,8 +16,11 @@ namespace Lykke.NuGetReferencesScanner
     {
         private const string ReferencePrefixesEnvVarKey = "ReferencePrefixes";
         private const string AreReferencePrefixesIncludeEnvVarKey = "AreReferencePrfixesIncluded";
+
         private const string GitHubApiEnvVarKey = "GitHubApiKey";
         private const string GitHubOrganizationEnvVarKey = "GitHubOrganization";
+        private const string GitHubReposEnvVarKey = "GitHubRepos";
+
         private const string BitBucketEnvVarKey = "BitBucketKey";
         private const string BitBucketSecretEnvVarKey = "BitBucketSecret";
         private const string BitBucketAccountEnvVarKey = "BitBucketAccount";
@@ -38,24 +41,25 @@ namespace Lykke.NuGetReferencesScanner
             try
             {
                 var projFileParser = new ProjectFileParser(
-                    Configuration[ReferencePrefixesEnvVarKey].Split(',').Select(s => s.Trim()),
-                    bool.Parse(Configuration[AreReferencePrefixesIncludeEnvVarKey]));
+                    Configuration[ReferencePrefixesEnvVarKey]?.Split(',').Select(s => s.Trim()),
+                    bool.Parse(Configuration[AreReferencePrefixesIncludeEnvVarKey] ?? "true"));
                 var scanners = new List<IOrganizationScanner>();
 
-                var ghKey = Configuration[GitHubOrganizationEnvVarKey];
-                if (!string.IsNullOrWhiteSpace(ghKey))
+                var ghOrgKey = Configuration[GitHubOrganizationEnvVarKey];
+                if (!string.IsNullOrWhiteSpace(ghOrgKey))
                     scanners.Add(
                         new GitHubScanner(
                             projFileParser,
-                            Configuration[GitHubOrganizationEnvVarKey],
-                            Configuration[GitHubApiEnvVarKey]));
+                            ghOrgKey,
+                            Configuration[GitHubApiEnvVarKey],
+                            Configuration[GitHubReposEnvVarKey]));
 
-                var bbKey = Configuration[BitBucketAccountEnvVarKey];
-                if (!string.IsNullOrWhiteSpace(bbKey))
+                var bbAccountKey = Configuration[BitBucketAccountEnvVarKey];
+                if (!string.IsNullOrWhiteSpace(bbAccountKey))
                     scanners.Add(
                         new BitBucketScanner(
                             projFileParser,
-                            Configuration[BitBucketAccountEnvVarKey],
+                            bbAccountKey,
                             Configuration[BitBucketEnvVarKey],
                             Configuration[BitBucketSecretEnvVarKey]));
 

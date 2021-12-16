@@ -12,14 +12,21 @@ namespace Lykke.NuGetReferencesScanner.Services
 
         public ProjectFileParser(IEnumerable<string> referencePrefixes, bool isInclude)
         {
-            string pattern = isInclude
-                ? "<PackageReference\\s+Include\\s*=\\s*\\\"("
-                 + string.Join('|', referencePrefixes.Select(s => $"{s}.+"))
-                 + ")\\\"\\s+Version\\s*=\\s*\"(.+)\\\""
-                : "<PackageReference\\s+Include\\s*=\\s*\\\"((?!("
-                 + string.Join('|', referencePrefixes)
-                 + ")).)(.+)\\\"";
-            _regex = new Regex(pattern);
+            if (referencePrefixes == null)
+            {
+                _regex = new Regex("<PackageReference\\s+Include\\s*=\\s*\\\"(.+)\\\"\\s+Version\\s*=\\s*\"(.+)\\\"");
+            }
+            else
+            {
+                string pattern = isInclude
+                    ? "<PackageReference\\s+Include\\s*=\\s*\\\"("
+                     + string.Join('|', referencePrefixes.Select(s => $"{s}.+"))
+                     + ")\\\"\\s+Version\\s*=\\s*\"(.+)\\\""
+                    : "<PackageReference\\s+Include\\s*=\\s*\\\"((?!("
+                     + string.Join('|', referencePrefixes)
+                     + ")).)(.+)\\\"";
+                _regex = new Regex(pattern);
+            }
         }
 
         public IReadOnlyCollection<PackageReference> Parse(string projectFileContent)

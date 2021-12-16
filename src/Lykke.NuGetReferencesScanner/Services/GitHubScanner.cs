@@ -19,27 +19,42 @@ namespace Lykke.NuGetReferencesScanner.Services
         private readonly GitHubClient _client;
         private readonly HashSet<string> _solutions = new HashSet<string>();
         private readonly string _organization;
-        private readonly string _token;
+        private readonly RepositoryCollection _repos;
 
         public GitHubScanner(
             ProjectFileParser projectFileParser,
             string organization,
-            string accessToken)
+            string accessToken,
+            string repos)
         {
             _projectFileParser = projectFileParser;
-            _token = accessToken ?? throw new InvalidOperationException(
-                $"Access token can't be empty. For unauthenticated requests rate limit = 60 calls per hour!");
-            _organization = organization ?? throw new ArgumentNullException(nameof(organization));
 
             var proxy = new WebProxy();
             var connection = new Connection(
                 new ProductHeaderValue(AppName),
                 new HttpClientAdapter(() => HttpMessageHandlerFactory.CreateDefault(proxy)));
 
+            var token = accessToken ?? throw new InvalidOperationException(
+                $"Access token can't be empty. For unauthenticated requests rate limit = 60 calls per hour!");
             _client = new GitHubClient(new ProductHeaderValue(AppName))
             {
-                Credentials = new Credentials(_token),
+                Credentials = new Credentials(token),
             };
+
+            if (string.IsNullOrWhiteSpace(organization))
+                throw new ArgumentNullException(nameof(organization));
+            _organization = organization;
+
+            if (!string.IsNullOrWhiteSpace(repos))
+            {
+                _repos = new RepositoryCollection();
+                var reposArr = repos.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                foreach(var repo in reposArr)
+                {
+                    var trimmedRepo = repo.Trim();
+                    _repos.Add(organization, trimmedRepo);
+                }
+            }
         }
 
         public  async Task ScanReposAsync(
@@ -52,7 +67,7 @@ namespace Lykke.NuGetReferencesScanner.Services
             {
                 Organizations = new List<string> { _organization },
                 Extensions = new List<string> { "csproj" },
-
+                Repos = _repos,
             };
 
             var searchResult = await _client.Search.SearchCode(scr);
